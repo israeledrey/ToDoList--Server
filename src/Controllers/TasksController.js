@@ -1,13 +1,14 @@
 import { connectToMongo } from '../Config/ConnectedMongo.js'
+import { ObjectId } from "mongodb";
 import mongoose from 'mongoose';
 
 
 
 export const getAllTasks = async (req, res) => {
     try {
-        await connectToMongo(); 
+        await connectToMongo();
         const tasksCollection = mongoose.connection.db.collection("tasks");
-        const tasks = await tasksCollection.find().toArray(); 
+        const tasks = await tasksCollection.find().toArray();
         res.json(tasks);
     } catch (error) {
         res.status(500).json({ error: "Failed to fetch tasks" });
@@ -17,59 +18,57 @@ export const getAllTasks = async (req, res) => {
 export const createTask = async (req, res) => {
     try {
         await connectToMongo();
-        const tasksCollection = mongoose.connection.db.collection("tasks");    
+        const tasksCollection = mongoose.connection.db.collection("tasks");
         const newTask = await tasksCollection.insertOne(req.body)
         console.log("New Task:", newTask);
 
         res.status(201).json(newTask);
-    } catch (error) { 
+    } catch (error) {
         res.status(500).json({ error: "Failed to create task" });
     }
 }
 
-export const updateStatusTask = async (req, res) => {
-    const taskId = req.params._id;
-    const { status } = req.body;
+
+export const updateTask = async (req, res) => {
+    const { id: taskId } = req.params;
+    const updates = req.body;
 
     try {
         await connectToMongo();
         const tasksCollection = mongoose.connection.db.collection("tasks");
-        const result = await tasksCollection.updateOne(
-            { id: taskId }, 
-            { $set: { status } }
+
+        console.log("Updating task with ID:", taskId);
+        delete updates._id;
+
+        const updatedTask = await tasksCollection.findOneAndUpdate(
+            { _id: new mongoose.Types.ObjectId(taskId) },
+            { $set: updates },
+            { returnDocument: "after" } 
         );
 
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ error: "Task not found" });
-        }
-
-        res.json({ message: "Task status updated successfully" });
+        res.json({ message: "Task updated successfully", task: updatedTask.value });
     } catch (error) {
-        res.status(500).json({ error: "Failed to update task status" });
+        console.error("Error updating task:", error);
+        res.status(500).json({ error: "Failed to update task" });
     }
-}
+};
 
 
 export const deleteTask = async (req, res) => {
-    const taskId = req.params._id;
-    console.log(`Deleting task with ID: ${taskId}`); 
+    const taskId = req.params.id;
+    console.log(`Backend - Deleting task with ID: ${taskId}`);
 
-
-    try{
+    try {
         await connectToMongo();
         const tasksCollection = mongoose.connection.db.collection("tasks");
-        const task = await tasksCollection.findOne({ id : taskId });
+        const task = await tasksCollection.findOneAndDelete({ _id: new ObjectId(taskId) });
+
         if (!task) {
             return res.status(404).json('Task not found');
         }
-        await tasksCollection.deleteOne({ id: taskId })
 
-        if (deleteTask.deletedCount === 0){
-            res.status(404).json({ message: 'Task not found' });
-            return; 
-        }
         res.status(200).json({ message: 'Task deleted successfully' });
-    }catch(error){
+    } catch (error) {
         console.error('Error deleting task:', error);
         res.status(500).json({ message: 'Error deleting Task', error });
     }
