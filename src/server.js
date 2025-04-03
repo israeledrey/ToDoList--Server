@@ -1,17 +1,18 @@
 const app = require("./app");
-const { connectToMongo } = require("./Config/ConnectedMongo");
 
-connectToMongo();
+const envConfig = require('./config/anvConfig')
+const { connectToMongo } = require("./config/mongoClient");
 
 
-const port =  3000;
 
 connectToMongo().then(() => {
   console.log('MongoDB connected successfully');
 
-  app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+  const PORT =  envConfig.PORT;
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
   });
+
 }).catch(error => {
   console.error('Failed to connect to MongoDB:', error);
 });

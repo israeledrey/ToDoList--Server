@@ -1,46 +1,53 @@
 const request = require('supertest');
+
 const app = require('../app');
-const { connectToMongo, getDb } = require('../Config/ConnectedMongo');
+const { connectToMongo, getDb } = require('../config/mongoClient');
+const { createDefaultTask } = require('../utils/validationUtils')
+
 
 let db;
 
 beforeAll(async () => {
-    await connectToMongo();
-    db = getDb();
-    await db.collection("tasks").deleteMany({});
-    console.log("Connected to DB for tests");
+  await connectToMongo();
+  db = getDb();
+  await db.collection("tasks").deleteMany({});
+  console.log("Connected to DB for tests");
 });
 
 afterAll(async () => {
-    await db.collection("tasks").deleteMany({});
-    await db.client.close(); 
-    console.log("🧹 Test run complete - DB remains untouched");
+  await db.collection("tasks").deleteMany({});
+  await db.client.close();
+  console.log("🧹 Test run complete - DB remains untouched");
 });
 
 
-// GET test
-describe('GET /tasksList', () => {
-    it('should return an empty array initially', async () => {
-        const res = await request(app).get('/tasksList');
-        expect(res.statusCode).toBe(200);
-        expect(res.body).toEqual([]);
-    });
+describe('GET /tasks', () => {
+  it('should return an empty array initially', async () => {
+    const res = await request(app).get('/tasks');
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual([]);
+  });
+
+  it('should return tasks after inserting them', async () => {
+    const tasks = [createDefaultTask(), createDefaultTask(), createDefaultTask()];
+    await db.collection("tasks").insertMany(tasks)
+    const res = await request(app).get('/tasks');
+    expect(res.statusCode).toBe(200);
+    expect(res.body.length).toBe(3);
+    expect(res.body).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: tasks[0].name })
+      ])
+    )
+  });
 });
 
 
-// POST test
 describe('POST /tasks/createTask', () => {
   it('should create a new task', async () => {
-    const task = {
-      name: 'Just test',
-      subject: 'Studies',
-      dayToComplete: '2025-03-20',
-      priority: '30%',
-      completed: false,
-      location: [32.0853, 34.7818],
-    };
+    const defaultTask = createDefaultTask();
+    const res = await request(app).post('/tasks/createTask').send(defaultTask);
 
-    const res = await request(app).post('/tasks/createTask').send(task);
     expect(res.statusCode).toBe(201);
     expect(res.body.insertedId).toBeDefined();
   });
@@ -51,53 +58,49 @@ describe('POST /tasks/createTask', () => {
   });
 });
 
-// PUT test
-describe('PUT /tasksList/:id', () => {
-  it('should update an existing task', async () => {
-    const task = {
-      name: 'Updated Task',
-      subject: 'Work',
-      dayToComplete: "2000-11-22",
-      priority: "30%",
-      completed: true,
-      location: [-34.4444, 122.3344]
-    };
 
-    const newTask = await db.collection("tasks").insertOne(task);
-    const taskId = newTask.insertedId;
-    const res = await request(app)
-      .put(`/tasksList/${taskId}`)  
-      .send(task);
-      console.log(newTask.insertedId);
+describe('PUT /tasks/:id', () => {
+  it('should update an existing task', async () => {
+    const defaultTask = createDefaultTask();
+    const newTask = await db.collection("tasks").insertOne(defaultTask);
+    const taskId = newTask.insertedId.toString();
+
+    const foundTask = await db.collection("tasks").findOne({ _id: taskId});
+    console.log("Found task in DB:", foundTask);
+
+    const res = await request(app).put(`/tasks/${taskId}`).send(defaultTask);
+
+    console.log(defaultTask._id);
+    console.log(taskId);
+
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.task.name).toBe('Jest Testing Updated');
+    expect(res.body.defaultTask.name).toBe('Jest Testing Updated');
   });
 
   it('should return 400 if task not found', async () => {
     const res = await request(app)
-      .put('/tasksList/654321123456789123456789')
+      .put('/tasks654321123456789123456789')
       .send({ name: 'Fake Update' });
 
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(404);
   });
 });
 
-// DELETE test
-describe('DELETE /tasksList/:id', () => {
-  it('should delete an existing task', async () => {
-    const newTask = await db.collection("tasks").insertOne({
-      name: 'To Delete',
-      subject: 'Leisure',
-    });
 
-    const res = await request(app).delete(`/tasksList/${newTask.insertedId}`);
+describe('DELETE /tasks/:id', () => {
+  it('should delete an existing task', async () => {
+    const defaultTask = createDefaultTask();
+    const newTask = await db.collection("tasks").insertOne(defaultTask);
+    const taskId = newTask.insertedId;
+    const res = await request(app).delete(`/tasks/${taskId}`);
+
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toBe('Task deleted successfully');
   });
 
   it('should return 404 if task does not exist', async () => {
-    const res = await request(app).delete('/tasksList/654321123456789123456789');
+    const res = await request(app).delete('/tasks/654321123456789123456789');
     expect(res.statusCode).toBe(404);
     expect(res.body).toBe('Task not found');
   });

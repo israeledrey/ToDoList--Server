@@ -1,15 +1,20 @@
 const Joi = require ("joi");
 
 
+
 const taskSchema = Joi.object({
+
+  _id: Joi.string().hex().length(24).required().messages({
+    "any.required": "id is required"
+  }),
 
   name: Joi.string().min(3).max(50).required().messages({
     "any.required": "Task name is required"
   }),
 
   subject: Joi.string()
-  .valid("Work", "leisure", "Studies").required().messages({
-    "any.only": "Task subject must be one of: Work, leisure, Studies",
+  .valid("Work", "Leisure", "Studies").required().messages({
+    "any.only": "Task subject must be one of: Work, Leisure, Studies",
   }),
   
   dayToComplete: Joi.date().iso().allow("").optional().messages({

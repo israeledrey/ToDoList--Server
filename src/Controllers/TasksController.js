@@ -1,5 +1,7 @@
-const { getDb } = require('../Config/ConnectedMongo.js')
 const { ObjectId } = require("mongodb");
+
+const { getDb } = require('../config/mongoClient.js')
+
 
 
 
@@ -20,7 +22,6 @@ const createTask = async (req, res) => {
         const db = getDb();
         const tasksCollection = db.collection("tasks");
         const newTask = await tasksCollection.insertOne(req.body)
-        console.log("New Task:", newTask);
 
         res.status(201).json(newTask);
     } catch (error) {
@@ -33,7 +34,6 @@ const updateTask = async (req, res) => {
     const { id: taskId } = req.params;
     const updates = req.body;
     
-    console.log("Data received for update:", updates);
 
     try {
         const db = getDb();
