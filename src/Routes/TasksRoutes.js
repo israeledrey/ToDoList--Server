@@ -1,7 +1,7 @@
 const express = require ("express");
 
-const { getAllTasks, createTask, updateTask, deleteTask } = require('../controllers/TasksController');
-const taskSchema = require('../schemas/TaskSchema');
+const { getAllTasks, createTask, updateTask, deleteTask } = require('../controllers/tasksController');
+const taskSchema = require('../schemas/taskSchema');
 const validateSchema = require('../middlewares/validateSchema');
 
 
