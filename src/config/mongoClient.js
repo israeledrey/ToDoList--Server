@@ -1,9 +1,9 @@
 const { MongoClient } = require('mongodb');
 
-const anvConfig = require('./anvConfig')
+const mongoConnectionUri = require('./envConfig')
 
 
-const uri = anvConfig.mongoURI;
+const uri = mongoConnectionUri.mongoURI;
 let client;
 
 const connectToMongo = async () => {
@@ -21,6 +21,10 @@ const getDb = () => {
   return client.db();
 };
 
+const getCollection = (collectionName) => {
+  const db = getDb();  
+  return db.collection(collectionName);
+};
 
 const close = async () => {
   if (client) {
@@ -33,5 +37,6 @@ const close = async () => {
 module.exports = {
   connectToMongo,
   getDb,
+  getCollection,
   close
 };

@@ -29,7 +29,7 @@ describe('GET /tasks', () => {
   });
 
   it('should return tasks after inserting them', async () => {
-    const tasks = [createDefaultTask(), createDefaultTask(), createDefaultTask()];
+    const tasks = Array.from({ length: 3 }, (_,index) => createDefaultTask(index));    
     await db.collection("tasks").insertMany(tasks)
     const res = await request(app).get('/tasks');
     expect(res.statusCode).toBe(200);
@@ -45,7 +45,7 @@ describe('GET /tasks', () => {
 
 describe('POST /tasks/createTask', () => {
   it('should create a new task', async () => {
-    const defaultTask = createDefaultTask();
+    const defaultTask = createDefaultTask(Date.now());
     const res = await request(app).post('/tasks/createTask').send(defaultTask);
 
     expect(res.statusCode).toBe(201);
@@ -61,21 +61,15 @@ describe('POST /tasks/createTask', () => {
 
 describe('PUT /tasks/:id', () => {
   it('should update an existing task', async () => {
-    const defaultTask = createDefaultTask();
+    const defaultTask = createDefaultTask(Date.now());
     const newTask = await db.collection("tasks").insertOne(defaultTask);
     const taskId = newTask.insertedId.toString();
-
-    const foundTask = await db.collection("tasks").findOne({ _id: taskId});
-    console.log("Found task in DB:", foundTask);
-
-    const res = await request(app).put(`/tasks/${taskId}`).send(defaultTask);
-
-    console.log(defaultTask._id);
-    console.log(taskId);
-
+    
+    const updatedTask = { ...defaultTask, name: 'Jest Testing Updated' };
+    const res = await request(app).put(`/tasks/${taskId}`).send(updatedTask);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.defaultTask.name).toBe('Jest Testing Updated');
+    expect(res.body.task.name).toBe('Jest Testing Updated ');
   });
 
   it('should return 400 if task not found', async () => {
@@ -90,7 +84,7 @@ describe('PUT /tasks/:id', () => {
 
 describe('DELETE /tasks/:id', () => {
   it('should delete an existing task', async () => {
-    const defaultTask = createDefaultTask();
+    const defaultTask = createDefaultTask(Date.now());
     const newTask = await db.collection("tasks").insertOne(defaultTask);
     const taskId = newTask.insertedId;
     const res = await request(app).delete(`/tasks/${taskId}`);

@@ -1,18 +1,29 @@
 const dayjs = require('dayjs')
-const { ObjectId } = require('mongodb');
 
-const createDefaultTask = () => {
+const createDefaultTask = (index) => {
+
+    // if (!index) {
+    //     throw new Error("Invalid input data.");
+    // }
+
     let defaultTask = {
-        _id: new ObjectId(),
-        name: 'Just test',
+        name: `Just test${index}`,
         subject: 'Studies',
-        dayToComplete: dayjs().format('YYYY-MM-DD'),
+        dayToComplete: dayjs().toDate(),
         priority: '30%',
         completed: false,
-        location: [32.0853, 34.7818],
+        location: [-118.2437, 34.0522],
     }
 
     return defaultTask;
 }
 
-module.exports = { createDefaultTask };
+const createUniqueTask = (index) => {
+    const task = createDefaultTask();
+    const uniqueSuffix = Date.now() + index; 
+    task.name = `${task.name}${uniqueSuffix}`;
+    const tasks = Array.from({ length: 3 }, (_, index) => createUniqueTask(index));
+    return tasks;
+  };
+
+module.exports = { createDefaultTask, createUniqueTask };

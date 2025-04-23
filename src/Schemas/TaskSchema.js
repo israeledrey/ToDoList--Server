@@ -4,10 +4,6 @@ const Joi = require ("joi");
 
 const taskSchema = Joi.object({
 
-  _id: Joi.string().hex().length(24).required().messages({
-    "any.required": "id is required"
-  }),
-
   name: Joi.string().min(3).max(50).required().messages({
     "any.required": "Task name is required"
   }),
