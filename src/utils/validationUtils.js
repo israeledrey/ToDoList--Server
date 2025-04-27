@@ -1,10 +1,6 @@
 const dayjs = require('dayjs')
 
 const createDefaultTask = (index) => {
-    
-    // if (!index) {
-    //     throw new Error("Invalid input data.");
-    // }
 
     let defaultTask = {
         name: `Just test${index}`,

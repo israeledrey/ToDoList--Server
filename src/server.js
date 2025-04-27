@@ -1,5 +1,5 @@
 const envConfig = require('./config/envConfig')
-const { connectToMongo, createCollectionOperations } = require("./config/mongoClient");
+const { connectToMongo, createCollectionOperations } = require("./db/mongoClient");
 
 const app = require("./app");
 

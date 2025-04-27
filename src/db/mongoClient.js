@@ -1,6 +1,6 @@
 const { MongoClient } = require('mongodb');
 
-const mongoConnectionUri = require('./envConfig')
+const mongoConnectionUri = require('../config/envConfig')
 
 
 const uri = mongoConnectionUri.mongoURI;

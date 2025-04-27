@@ -1,7 +1,7 @@
 const request = require('supertest');
 
 const app = require('../app');
-const { connectToMongo, getDb } = require('../config/mongoClient');
+const { connectToMongo, getDb } = require('../db/mongoClient');
 const { createDefaultTask } = require('../utils/validationUtils')
 
 

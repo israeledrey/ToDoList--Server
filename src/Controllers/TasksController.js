@@ -1,5 +1,5 @@
 const { ObjectId } = require("mongodb");
-const { getCollection } = require("../config/mongoClient")
+const { getCollection } = require("../db/mongoClient")
 
 
 
