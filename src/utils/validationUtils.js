@@ -1,7 +1,7 @@
 const dayjs = require('dayjs')
 
 const createDefaultTask = (index) => {
-
+    
     // if (!index) {
     //     throw new Error("Invalid input data.");
     // }
@@ -18,12 +18,4 @@ const createDefaultTask = (index) => {
     return defaultTask;
 }
 
-const createUniqueTask = (index) => {
-    const task = createDefaultTask();
-    const uniqueSuffix = Date.now() + index; 
-    task.name = `${task.name}${uniqueSuffix}`;
-    const tasks = Array.from({ length: 3 }, (_, index) => createUniqueTask(index));
-    return tasks;
-  };
-
-module.exports = { createDefaultTask, createUniqueTask };
+module.exports = { createDefaultTask };

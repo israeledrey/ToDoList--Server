@@ -26,6 +26,24 @@ const getCollection = (collectionName) => {
   return db.collection(collectionName);
 };
 
+const createCollectionOperations = async (collectionName, indexes = []) => {
+  const db = getDb();
+  const collections = await db.listCollections({ name: collectionName }).toArray();
+
+  if (collections.length === 0) {
+    await db.createCollection(collectionName);
+    console.log(`Collection '${collectionName}' created successfully`);
+  } else {
+  }
+
+  if (indexes.length > 0) {
+    const collection = db.collection(collectionName);
+    for (const index of indexes) {
+      await collection.createIndex(index.fields, index.options || {});
+    }
+  }
+};
+
 const close = async () => {
   if (client) {
     await client.close();
@@ -38,5 +56,6 @@ module.exports = {
   connectToMongo,
   getDb,
   getCollection,
+  createCollectionOperations,
   close
 };

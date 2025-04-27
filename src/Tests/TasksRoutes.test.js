@@ -66,10 +66,10 @@ describe('PUT /tasks/:id', () => {
     const taskId = newTask.insertedId.toString();
     
     const updatedTask = { ...defaultTask, name: 'Jest Testing Updated' };
-    const res = await request(app).put(`/tasks/${taskId}`).send(updatedTask);
+    const res = await request(app).put(`/tasks/${taskId}`).send(updatedTask);    
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.task.name).toBe('Jest Testing Updated ');
+    expect(res.body.task.name).toBe('Jest Testing Updated');
   });
 
   it('should return 400 if task not found', async () => {

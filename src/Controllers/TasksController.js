@@ -13,12 +13,11 @@ const getAllTasks = async (req, res) => {
 };
 
 const createTask = async (req, res) => {
-    try {
+    try {    
         const newTask = await getCollection("tasks").insertOne(req.body)
-
         res.status(201).json(newTask);
-    } catch (error) {
-        res.status(500).json({ error: "Failed to create task" });
+    } catch (error) {        
+        res.status(500).json({error: error.message});
     }
 }
 
