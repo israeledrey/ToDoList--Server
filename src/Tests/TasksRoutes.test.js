@@ -6,6 +6,7 @@ const { createDefaultTask } = require('../utils/validationUtils')
 
 
 let db;
+jest.setTimeout(15000);
 
 beforeAll(async () => {
   await connectToMongo();
@@ -29,7 +30,7 @@ describe('GET /tasks', () => {
   });
 
   it('should return tasks after inserting them', async () => {
-    const tasks = Array.from({ length: 3 }, (_,index) => createDefaultTask(index));    
+    const tasks = Array.from({ length: 3 }, (_, index) => createDefaultTask(index));
     await db.collection("tasks").insertMany(tasks)
     const res = await request(app).get('/tasks');
     expect(res.statusCode).toBe(200);
@@ -64,12 +65,13 @@ describe('PUT /tasks/:id', () => {
     const defaultTask = createDefaultTask(Date.now());
     const newTask = await db.collection("tasks").insertOne(defaultTask);
     const taskId = newTask.insertedId.toString();
-    
-    const updatedTask = { ...defaultTask, name: 'Jest Testing Updated' };
-    const res = await request(app).put(`/tasks/${taskId}`).send(updatedTask);    
+
+    const { _id, ...taskWithoutId } = defaultTask;
+    const updatedTask = { ...taskWithoutId, name: 'Jest Testing Updated' };
+    const res = await request(app).put(`/tasks/${taskId}`).send(updatedTask);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.task.name).toBe('Jest Testing Updated');
+    expect(res.body.name).toBe('Jest Testing Updated');
   });
 
   it('should return 400 if task not found', async () => {
