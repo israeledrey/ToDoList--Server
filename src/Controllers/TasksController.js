@@ -25,9 +25,9 @@ const createTask = async (req, res) => {
 const updateTask = async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         const updates = req.body;
-        
+
 
         if (!ObjectId.isValid(id)) {
             return res.status(400).send('Invalid ID');
@@ -66,9 +66,29 @@ const deleteTask = async (req, res) => {
     }
 }
 
+
+const filteredTasks = async (req, res) => {
+    try {
+        const { name } = req.query;
+
+        if (!name) {
+            return res.status(400).json({ error: "Name query parameter is required" });
+        }
+
+        const tasks = await getCollection("tasks")
+            .find({ name: { $regex: name, $options: 'i' } })
+            .toArray();
+
+        res.status(200).json(tasks);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to filter tasks", details: error.message });
+    }
+};
+
 module.exports = {
     getAllTasks,
     createTask,
     updateTask,
-    deleteTask
+    deleteTask,
+    filteredTasks
 };
