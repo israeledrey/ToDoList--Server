@@ -69,26 +69,41 @@ const deleteTask = async (req, res) => {
 
 const filteredTasks = async (req, res) => {
     try {
-        const { name } = req.query;
-
-        if (!name) {
-            return res.status(400).json({ error: "Name query parameter is required" });
-        }
-
-        const tasks = await getCollection("tasks")
-            .find({ name: { $regex: name, $options: 'i' } })
-            .toArray();
-
-        res.status(200).json(tasks);
+      const { name, completed } = req.query;
+      const filter = {};
+  
+      if (name) {
+        filter.name = { $regex: name, $options: 'i' };
+      }
+  
+      if (completed !== undefined) {
+        filter.completed = completed === 'true';
+      }
+  
+      const tasks = await getCollection("tasks")
+        .find(filter)
+        .toArray();
+  
+      res.status(200).json(tasks);
     } catch (error) {
-        res.status(500).json({ error: "Failed to filter tasks", details: error.message });
+      res.status(500).json({ error: "Failed to filter tasks", details: error.message });
     }
-};
+  };
 
+const getSubjectOption = async (req, res) => {
+    try {
+        const subjects = await getCollection("taskSubject").find().toArray();
+        res.json(subjects);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch tasks" });
+    }
+}
+{}
 module.exports = {
     getAllTasks,
     createTask,
     updateTask,
     deleteTask,
-    filteredTasks
+    filteredTasks,
+    getSubjectOption
 };
