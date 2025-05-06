@@ -1,9 +1,9 @@
 const { MongoClient } = require('mongodb');
 
-const mongoConnectionUri = require('../config/envConfig')
+const config = require('../config/envConfig')
 
 
-const uri = mongoConnectionUri.mongoURI;
+const uri = config.mongoURI;
 let client;
 
 const connectToMongo = async () => {

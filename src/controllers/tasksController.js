@@ -3,7 +3,6 @@ const { StatusCodes } = require ('http-status-codes');
 const { getCollection } = require("../db/mongoClient")
 
 
-
 const getAllTasks = async (req, res) => {
         const tasks = await getCollection("tasks").find().toArray();
         res.json(tasks);
@@ -51,15 +50,11 @@ const deleteTask = async (req, res) => {
 
 
 const filteredTasks = async (req, res) => {
-      const { name, completed } = req.query;
+      const { name } = req.query;
       const filter = {};
   
       if (name) {
         filter.name = { $regex: name, $options: 'i' };
-      }
-  
-      if (completed !== undefined) {
-        filter.completed = completed === 'true';
       }
   
       const tasks = await getCollection("tasks")

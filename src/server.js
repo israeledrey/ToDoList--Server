@@ -4,15 +4,16 @@ const { connectToMongo, createCollectionOperations } = require("./db/mongoClient
 const app = require("./app");
 
 
-
-
-connectToMongo().then(async() => {
-  console.log('MongoDB connected successfully');
-
+const initializeDatabase = async () => {
   await createCollectionOperations('tasks', [
     { fields: { _id: 1 } },
     { fields: { subject: 1 } },
   ]);
+};
+
+
+connectToMongo().then(async() => {
+  await initializeDatabase();
 
   const PORT =  envConfig.PORT;
   app.listen(PORT, () => {
@@ -20,6 +21,6 @@ connectToMongo().then(async() => {
   });
 
 }).catch(error => {
-  console.error('Failed to connect to MongoDB:', error);
+  console.log('❌ Failed to start the application:', error);
   process.exit(1);
 });
