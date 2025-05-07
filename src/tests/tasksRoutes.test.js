@@ -2,7 +2,7 @@ const request = require('supertest');
 
 const app = require('../app');
 const { connectToMongo, getDb } = require('../db/mongoClient');
-const { createTask, createTaskWithoutId } = require('../utils/generateMockTask')
+const { createTask } = require('../utils/generateMockTask')
 
 
 let db;
@@ -69,9 +69,9 @@ describe('PUT /tasks/:id', () => {
     const newTask = await db.collection("tasks").insertOne(defaultTask);
     const taskId = newTask.insertedId.toString();
 
-    const taskWithoutId = createTaskWithoutId();
-    const updatedTask = { ...taskWithoutId, name: 'Jest Testing Updated' };
-    const res = await request(app).put(`/tasks/${taskId}`).send(updatedTask);
+    const updateTask = createTask({ name: 'Jest Testing Updated' });
+    const { _id, ...taskWithoutId } = updateTask;
+    const res = await request(app).put(`/tasks/${taskId}`).send(taskWithoutId);
 
     expect(res.statusCode).toBe(200);
     expect(res.body.name).toBe('Jest Testing Updated');

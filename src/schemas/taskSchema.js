@@ -8,8 +8,8 @@ const geoJsonSchema = Joi.object({
       geometry: Joi.object({
         type: Joi.string().valid("Point").required(),
         coordinates: Joi.array().items(
-          Joi.number().required(), 
-          Joi.number().required() 
+          Joi.number().required(),
+          Joi.number().required()
         ).length(2).required()
       }).required(),
       properties: Joi.object().default({})
@@ -30,7 +30,7 @@ const taskSchema = Joi.object({
     .valid("Work", "Leisure", "Studies").required().messages({
       "any.only": "Task subject must be one of: Work, Leisure, Studies",
     }),
-  
+
   dayToComplete: Joi.date().iso().allow("").optional().messages({
     "any.only": "The date must be in (YYYY-MM-DD) format"
   }),
@@ -43,7 +43,11 @@ const taskSchema = Joi.object({
     "boolean.base": "Completed must be true or false",
   }),
 
-  location: geoJsonSchema
+  location: geoJsonSchema,
+
+  createdAt: Joi.forbidden(),
+  
+  updatedAt: Joi.forbidden(),
 });
 
 module.exports = taskSchema;

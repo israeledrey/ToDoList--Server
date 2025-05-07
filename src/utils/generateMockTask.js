@@ -1,10 +1,8 @@
-const dayjs = require('dayjs')
+const dayjs = require('dayjs');
 const { faker } = require('@faker-js/faker');
 
-
-const createTask = () => {
-
-    let defaultTask = {
+const createTask = (options = {}) => {
+    const defaultTask = {
         name: faker.word.words(2),
         subject: "Work",
         dayToComplete: dayjs().toDate(),
@@ -19,18 +17,13 @@ const createTask = () => {
                         type: "Point",
                         coordinates: [-118.2437, 34.0522],
                     },
-                    properties: {}
-                }
+                    properties: {},
+                },
             ],
-        }
-    }
+        },
+    };
 
-    return defaultTask;
-}
-
-const createTaskWithoutId = () => {
-    const { _id, ...taskWithoutId } = createTask();
-    return taskWithoutId;
+    return { ...defaultTask, ...options };
 };
 
-module.exports = { createTask, createTaskWithoutId };
+module.exports = { createTask };
