@@ -1,90 +1,57 @@
-const { ObjectId } = require("mongodb");
-const { StatusCodes } = require('http-status-codes');
-const { getCollection } = require("../db/mongoClient")
-
+const { StatusCodes } = require("http-status-codes");
+const tasksDal = require("../dal/taskDal");
 
 const getAllTasks = async (req, res) => {
-    const tasks = await getCollection("tasks").find().toArray();
-    res.json(tasks);
+  const tasks = await tasksDal.getAll("tasks");
+  res.json(tasks);
 };
 
 const createTask = async (req, res) => {
-    const now = new Date();
-    const taskToInsert = {
-        ...req.body,
-        createdAt: now,
-        updatedAt: now
-    };
-    const newTask = await getCollection("tasks").insertOne(taskToInsert)
-    res.status(StatusCodes.CREATED).json(newTask);
-}
-
+  const now = new Date();
+  const taskToInsert = { ...req.body, createdAt: now, updatedAt: now };
+  const newTask = await tasksDal.create("tasks", taskToInsert);
+  res.status(StatusCodes.CREATED).json(newTask);
+};
 
 const updateTask = async (req, res) => {
-    const { id } = req.params;
-    const updates = {
-        ...req.body,
-        updatedAt: new Date()
-    };
+  const { id } = req.params;
+  const updatedData = { ...req.body, updatedAt: new Date() };
+  const updatedTask = await tasksDal.update("tasks", id, updatedData);
 
-    if (!ObjectId.isValid(id)) {
-        return res.status(StatusCodes.BAD_REQUEST).send('Invalid ID');
-    }
+  if (!updatedTask) {
+    return res.status(StatusCodes.NOT_FOUND).send("Task not found or invalid ID");
+  }
 
-    const task = await getCollection('tasks').findOneAndUpdate(
-        { _id: new ObjectId(id) },
-        { $set: updates },
-        { returnDocument: 'after' }
-    );
-
-    if (!task) {
-        return res.status(StatusCodes.NOT_FOUND).send('Task not found');
-    }
-
-    res.send(task);
+  res.json(updatedTask);
 };
-
 
 const deleteTask = async (req, res) => {
-    const taskId = req.params.id;
+  const { id } = req.params;
+  const deleted = await tasksDal.remove("tasks", id);
 
-    const task = await getCollection("tasks").findOneAndDelete({ _id: new ObjectId(taskId) });
+  if (!deleted) {
+    return res.status(StatusCodes.NOT_FOUND).json("Task not found or invalid ID");
+  }
 
-    if (!task) {
-        return res.status(StatusCodes.NOT_FOUND).json('Task not found');
-    }
-
-    res.status(StatusCodes.OK).json({ message: 'Task deleted successfully' });
-}
-
-
-const filteredTasks = async (req, res) => {
-    const { name } = req.query;
-    const filter = {};
-
-    if (name) {
-        filter.name = { $regex: name, $options: 'i' };
-    }
-
-    const tasks = await getCollection("tasks")
-        .find(filter)
-        .toArray();
-
-    res.status(StatusCodes.OK).json(tasks);
+  res.status(StatusCodes.OK).json({ message: "Task deleted successfully" });
 };
 
+const filteredTasks = async (req, res) => {
+  const { name } = req.query;
+  const tasks = await tasksDal.filterByName("tasks", name);
+  res.status(StatusCodes.OK).json(tasks);
+};
 
 const getSubjectOption = async (req, res) => {
-    const subjects = await getCollection("taskSubject").find().toArray();
-    res.json(subjects);
-}
-
+  const subjects = await tasksDal.getSubjects("taskSubject");
+  res.json(subjects);
+};
 
 module.exports = {
-    getAllTasks,
-    createTask,
-    updateTask,
-    deleteTask,
-    filteredTasks,
-    getSubjectOption
+  getAllTasks,
+  createTask,
+  updateTask,
+  deleteTask,
+  filteredTasks,
+  getSubjectOption
 };

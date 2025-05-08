@@ -1,4 +1,5 @@
 const request = require('supertest');
+const { StatusCodes } = require("http-status-codes");
 
 const app = require('../app');
 const { connectToMongo, getDb } = require('../db/mongoClient');
@@ -26,7 +27,7 @@ describe('GET /tasks', () => {
   it('should return an empty array initially', async () => {
     const res = await request(app).get('/tasks');
 
-    expect(res.statusCode).toBe(200);
+    expect(res.statusCode).toBe(StatusCodes.OK);
     expect(res.body).toEqual([]);
   });
 
@@ -35,7 +36,7 @@ describe('GET /tasks', () => {
     await db.collection("tasks").insertMany(tasks)
     const res = await request(app).get('/tasks');
 
-    expect(res.statusCode).toBe(200);
+    expect(res.statusCode).toBe(StatusCodes.OK);
     expect(res.body.length).toBe(3);
     expect(res.body).toEqual(
       expect.arrayContaining([
@@ -48,32 +49,32 @@ describe('GET /tasks', () => {
 
 describe('POST /tasks/createTask', () => {
   it('should create a new task', async () => {
-    const defaultTask = createTask();
-    const res = await request(app).post('/tasks/createTask').send(defaultTask);
+    const task = createTask();
+    const res = await request(app).post('/tasks/createTask').send(task);
 
-    expect(res.statusCode).toBe(201);
-    expect(res.body.insertedId).toBeDefined();
+    expect(res.statusCode).toBe(StatusCodes.CREATED);
+    expect(res.body._id).toBeDefined();
   });
 
   it('should fail when missing required fields', async () => {
     const res = await request(app).post('/tasks/createTask').send({});
 
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
   });
 });
 
 
 describe('PUT /tasks/:id', () => {
   it('should update an existing task', async () => {
-    const defaultTask = createTask();
-    const newTask = await db.collection("tasks").insertOne(defaultTask);
-    const taskId = newTask.insertedId.toString();
+    const task = createTask();
+    const insertedTask = await db.collection("tasks").insertOne(task);
+    const id = insertedTask.insertedId.toString();
 
     const updateTask = createTask({ name: 'Jest Testing Updated' });
     const { _id, ...taskWithoutId } = updateTask;
-    const res = await request(app).put(`/tasks/${taskId}`).send(taskWithoutId);
+    const res = await request(app).put(`/tasks/${id}`).send(taskWithoutId);
 
-    expect(res.statusCode).toBe(200);
+    expect(res.statusCode).toBe(StatusCodes.OK);
     expect(res.body.name).toBe('Jest Testing Updated');
   });
 
@@ -82,26 +83,26 @@ describe('PUT /tasks/:id', () => {
       .put('/tasks654321123456789123456789')
       .send({ name: 'Fake Update' });
 
-    expect(res.statusCode).toBe(404);
+    expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
   });
 });
 
 
 describe('DELETE /tasks/:id', () => {
   it('should delete an existing task', async () => {
-    const defaultTask = createTask();
-    const newTask = await db.collection("tasks").insertOne(defaultTask);
-    const taskId = newTask.insertedId;
-    const res = await request(app).delete(`/tasks/${taskId}`);
+    const task = createTask();    
+    const insertedTask = await db.collection("tasks").insertOne(task);
+    const id = insertedTask.insertedId;
+    const res = await request(app).delete(`/tasks/${id}`);
 
-    expect(res.statusCode).toBe(200);
+    expect(res.statusCode).toBe(StatusCodes.OK);
     expect(res.body.message).toBe('Task deleted successfully');
   });
 
   it('should return 404 if task does not exist', async () => {
     const res = await request(app).delete('/tasks/654321123456789123456789');
 
-    expect(res.statusCode).toBe(404);
-    expect(res.body).toBe('Task not found');
+    expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
+    expect(res.body).toBe('Task not found or invalid ID');
   });
 });

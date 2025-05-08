@@ -45,9 +45,14 @@ const taskSchema = Joi.object({
 
   location: geoJsonSchema,
 
-  createdAt: Joi.forbidden(),
+  createdAt: Joi.any().strip(),
   
-  updatedAt: Joi.forbidden(),
+  updatedAt: Joi.any().strip(),
+
 });
+
+
+
+
 
 module.exports = taskSchema;
