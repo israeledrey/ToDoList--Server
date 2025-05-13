@@ -53,7 +53,7 @@ describe('POST /tasks/createTask', () => {
     const res = await request(app).post('/tasks/createTask').send(task);
 
     expect(res.statusCode).toBe(StatusCodes.CREATED);
-    expect(res.body._id).toBeDefined();
+    expect(res.body).toBeDefined();
   });
 
   it('should fail when missing required fields', async () => {

@@ -1,41 +1,42 @@
 const { ObjectId } = require("mongodb");
-const { getCollection } = require("../db/mongoClient");
+const { getCollectionOperations } = require("../db/mongoClient");
 
-const getAll = async (collection) => {
-  return getCollection(collection).find().toArray();
+const tasksOps = getCollectionOperations("tasks");
+const subjectsOps = getCollectionOperations("taskSubject");
+
+const getAll = async () => {
+  return await tasksOps.find();
 };
 
-const create = async (collection, data) => {
-  const result = await getCollection(collection).insertOne(data);
-  return { ...data, _id: result.insertedId };
+const create = async (data) => {
+  const now = new Date();
+  const taskToInsert = { ...data, createdAt: now, updatedAt: now };
+  return await tasksOps.insertOne(taskToInsert);
 };
 
-const update = async (collection, id, data) => {
+const update = async (id, data) => {
   if (!ObjectId.isValid(id)) return null;
 
-  const result = await getCollection(collection).findOneAndUpdate(
+  const updatedData = { ...data, updatedAt: new Date() };
+  return tasksOps.findOneAndUpdate(
     { _id: new ObjectId(id) },
-    { $set: { ...data } },
-    { returnDocument: "after" }
+    { $set: updatedData },
   );
-
-  return result;
 };
 
-const remove = async (collection, id) => {
+const remove = async (id) => {
   if (!ObjectId.isValid(id)) return null;
 
-  const result = await getCollection(collection).findOneAndDelete({ _id: new ObjectId(id) });
-  return result;
+  return tasksOps.findOneAndDelete({ _id: new ObjectId(id) });
 };
 
-const filterByName = async (collection, name) => {
-  const filter = name ? { name: { $regex: name, $options: "i" } } : {};
-  return getCollection(collection).find(filter).toArray();
+const filterByName = async (name) => {
+  const filteredName = name ? { name: { $regex: name, $options: "i" } } : {};
+  return tasksOps.filterByName(filteredName)
 };
 
-const getSubjects = async (collection) => {
-  return getCollection(collection).find().toArray();
+const getSubjects = async () => {
+  return await subjectsOps.find();
 };
 
 module.exports = {

@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 
 const config = require('../config/envConfig')
 
@@ -8,11 +8,11 @@ let client;
 
 const connectToMongo = async () => {
   if (client) {
-    return client; 
+    return client;
   }
-  
+
   client = new MongoClient(uri);
-  return client.connect(); 
+  return client.connect();
 };
 
 
@@ -21,8 +21,15 @@ const getDb = () => {
   return client.db();
 };
 
+const close = async () => {
+  if (client) {
+    await client.close();
+    console.log('MongoDB connection closed');
+  }
+};
+
 const getCollection = (collectionName) => {
-  const db = getDb();  
+  const db = getDb();
   return db.collection(collectionName);
 };
 
@@ -44,18 +51,33 @@ const createCollectionOperations = async (collectionName, indexes = []) => {
   }
 };
 
-const close = async () => {
-  if (client) {
-    await client.close();
-    console.log('MongoDB connection closed');
+const getCollectionOperations = (collection) => {
+
+  const find = async () => await getCollection(collection).find().toArray();
+
+  const insertOne = async (document) => await getCollection(collection).insertOne(document);
+
+  const findOneAndUpdate = async (query, payload, options = {} ) => await getCollection(collection).findOneAndUpdate(query, payload, { returnDocument: "after", ...options });
+
+  const findOneAndDelete = async (query) => await getCollection(collection).findOneAndDelete(query);
+
+  const filterByName = async (name) => await getCollection(collection).find(name).toArray();
+
+  return {
+    find,
+    insertOne,
+    findOneAndUpdate,
+    findOneAndDelete,
+    filterByName
   }
-};
+}
 
 
 module.exports = {
   connectToMongo,
   getDb,
+  close,
   getCollection,
   createCollectionOperations,
-  close
+  getCollectionOperations
 };
